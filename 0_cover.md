@@ -1,14 +1,20 @@
-# Assignment 2: The Dirty Ledger
+# Assignment 3: Two Averages, One Argument
 **Course:** The Prices Desk — ICA-F26  
-**Topic:** Loading, cleaning and data quality  
-**Dataset:** `teaching_prices_messy.csv`
+**Topic:** Week 3 — Descriptive analytics  
+**Source:** `teaching_prices_messy.csv`, uploaded source dataset, cleaned using Assignment 2 decisions.
 
-## Scope and provenance
-This analysis uses the supplied illustrative teaching dataset only. The `data_label` field explicitly says these are **not actual PBS observations**. No external prices or assumptions are used to replace observations.
+## Contents
+- `0_cover.md`
+- `1_attempt.md`
+- `2_work.ipynb`
+- `3_log_reflection.md`
+- `teaching_prices_messy.csv`
+- `teaching_prices_cleaned_with_flags.csv`
+- `teaching_prices_audit_all_rows.csv`
+- `item_summary.csv`
+- `sweetener_sensitivity.csv`
 
-## Files
-- `1_attempt.md`: diagnosis and planned decisions
-- `2_work.ipynb`: reproducible cleaning and verification
-- `3_log_reflection.md`: code-line verdicts, evidence, log and reflection
+## Provenance
+The uploaded source contains 97 rows and is labelled illustrative teaching data, not actual PBS observations. The Assignment 2 cleaning rules are reapplied transparently: preserve raw values, remove one exact duplicate from analysis, parse comma-formatted numeric text, retain missing values, normalize item spelling in a separate column, and flag uncertain values rather than guessing corrections.
 
-**Student completion note:** The assignment asks for an attempt-before-AI snapshot and a personal reflection. Those parts must accurately represent the student's own work and thinking; edit the marked reflection prompts before submission.
+**Student completion:** The assignment requests a genuine attempt-before-AI record and personal reflection. Add your own authentic notes where prompted; this package does not claim to create a past timestamped independent attempt.

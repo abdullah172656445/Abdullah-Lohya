@@ -1,49 +1,70 @@
-# 3 — Cleaning log, AI-code verdicts and reflection
+# 3 — Referee's note, AI audit and reflection
 
-## Cleaning log
-| Operation | Result | Evidence / justification |
-|---|---|---|
-| Preserve raw input | Kept untouched `raw` and `price_raw` | Allows every change to be audited |
-| Parse date | Converted to datetime with coercion | Enables chronological checks; parse failures are counted |
-| Normalize item case/spacing | Added `item_clean`; original `item` retained | `oil b` becomes `Oil B` without overwriting source |
-| Parse price | Added numeric `price_num`; comma removed before conversion | `1,250` becomes 1250; original string retained |
-| Exact duplicate | Marked duplicate and excluded one repeated row from analysis | 97 raw rows → 96 analytical rows |
-| Missing price | Retained as missing and flagged | No defensible value can be inferred |
-| 9999 | Retained and flagged | Extreme relative to other Sweetener D observations; no replacement evidence |
-| Oil B City 1 at 108.5 | Retained and flagged | Looks inconsistent with Oil B's other values and resembles Staple A prices; cannot safely infer intended correction |
+## Referee's note (O / E / C labels)
 
-## AI-suggested cleaning code: line-by-line verdicts
-Use these verdicts to evaluate the actual AI code you were given in class. The notebook above is a conservative reference implementation; if your AI-generated code differs, compare each corresponding line.
+**O:** The uploaded teaching dataset contains 97 rows, four item categories after case normalization, two cities and twelve weekly dates.  
+**O:** One exact duplicate is removed from the analytical table, leaving 96 rows.  
+**O:** The item means are Oil B: PKR 316.18, Pulse C: PKR 205.91, Staple A: PKR 160.89, Sweetener D: PKR 576.81.  
+**O:** The item medians are Oil B: PKR 324.00, Pulse C: PKR 206.00, Staple A: PKR 112.50, Sweetener D: PKR 167.75.  
+**O:** The first-to-last changes, based on each item's first-date and last-date averages across available cities, are Oil B: 15.28%, Pulse C: 5.25%, Staple A: 12.98%, Sweetener D: 19.41%.  
+**O:** Sweetener D's mean with the flagged 9999 value is PKR 576.81, compared with PKR 167.15 when that value is excluded for a sensitivity check.  
+**O:** Sweetener D's median is PKR 167.75 with 9999 and PKR 167.50 without it.  
+**E:** The difference between Sweetener D's mean and median is consistent with an extreme value pulling the mean upward.  
+**E:** The parsed 1250 value may be a source or formatting problem, but the dataset does not establish its intended value.  
+**E:** The 108.5 value labelled `oil b` may be a category mismatch because it is far below other Oil B prices and creates a normalized key collision.  
+**C:** These data prove that a particular real-world event caused prices to rise.  
+**O:** The source is explicitly labelled illustrative teaching data, not actual PBS observations, and contains no variables that identify a cause.
 
-| Suggested action / code pattern | Verdict | Evidence and reasoning |
-|---|---|---|
-| `dropna()` on the whole dataframe | **Reject** | Would discard the Pulse C / City 2 row even though only its price is missing; the row still carries useful identifying information |
-| `drop_duplicates()` | **Modify** | Exact duplicate exists, but mark it first and preserve the full raw/audit table; remove only one repeated copy from analytical data |
-| `pd.to_numeric(price)` without removing commas | **Modify** | `1,250` may parse as missing; remove the thousands separator transparently and preserve original text |
-| Replace missing price with mean/median | **Reject** | No source evidence supports imputation; it would create an invented observation |
-| Replace 9999 with a guessed typical price | **Reject** | Outlier detection is not proof of the intended value |
-| Convert item names to title case | **Keep with modification** | Safe as a separate normalized column; retain original item text |
-| Delete every outlier using an IQR rule | **Reject** | Could remove valid observations and hide data-quality issues; flag for review first |
-| Delete the low Oil B observation | **Reject** | After case normalization it collides with the other Oil B / City 1 record on the same date; it may instead be a mislabelled Staple A row. The evidence cannot identify which field is wrong |
-| Overwrite original columns during cleaning | **Reject** | Destroys auditability; create new cleaned columns instead |
+## Statistics table
 
-## Before-and-after evidence
-- Raw records: **97**.
-- Exact duplicate records: **1**; analytical records after removing the repeated copy: **96**.
-- Missing prices: **1**, retained and flagged.
-- Comma-formatted price: **1**, parsed as **1250** while preserving its raw text.
-- Extreme value 9999: **1**, retained and flagged.
-- Suspicious Oil B / City 1 value 108.5: **1**, retained and flagged.
-- Distinct weekly dates: **12**; four item labels after case normalization; two cities.
-- Important key collision: after normalizing `oil b` to `Oil B`, the 2026-02-05 / Oil B / City 1 key appears twice, with prices 108.5 and 318.0. The suspicious 108.5 row therefore creates a conflict and leaves the intended Staple A / City 1 observation for that date absent. Do not drop either record automatically; the notebook reports this collision for investigation.
-- A missing price is still a present date-item-city record. The data therefore has 96 records after exact duplicate removal, but it does not represent 96 clean, verified unique observations.
+|Item|Numeric n|Mean (PKR/kg)|Median (PKR/kg)|First-date mean|Last-date mean|Change|
+|-|-:|-:|-:|-:|-:|-:|
+|Oil B|25|316.18|324.00|301.00|347.00|15.28%|
+|Pulse C|23|205.91|206.00|200.00|210.50|5.25%|
+|Staple A|23|160.89|112.50|104.00|117.50|12.98%|
+|Sweetener D|24|576.81|167.75|152.00|181.50|19.41%|
+
+
+
+## Flagged-value comparison: Sweetener D
+
+|Calculation|n|Mean (PKR/kg)|Median (PKR/kg)|
+|-|-:|-:|-:|
+|Including flagged 9999|24|576.81|167.75|
+|Excluding 9999 for sensitivity check|23|167.15|167.50|
+
+The 9999 value remains in the main dataset because no evidence supports a replacement. The exclusion is shown only to illustrate its influence on the averages.
+
+## AI classmate transcript excerpt
+
+**Classmate:** The mean is always the typical price, right?  
+**Response:** Not always. The mean is the arithmetic average and can be pulled away from most observations by an extreme value.
+
+**Classmate:** Why not just use the mean for Sweetener D?  
+**Response:** With 9999 included, the mean is PKR 576.81, while the median is PKR 167.75. Both are mathematically valid summaries, but the mean is heavily influenced by the flagged extreme value.
+
+**Classmate:** So the median is always the right answer?  
+**Response:** No. The median is resistant to extremes, but it does not reflect the size of every observation. The useful summary depends on the distribution and question.
+
+**Classmate:** Does the rise prove why prices went up?  
+**Response:** No. These descriptive statistics show a change in the teaching data, not its cause.
+
+## Claim audit
+
+|Claim|Colour|How checked|Decision|
+|-|-|-|-|
+|Item means and medians in the table|Green|Recomputed from the uploaded CSV after Assignment 2 cleaning|Keep|
+|First-to-last changes|Green|Recomputed first-date and last-date city averages|Keep|
+|9999 affects Sweetener D mean strongly|Green|Recomputed with and without exactly 9999|Keep as sensitivity comparison|
+|1250 may be a source/formatting issue|Amber|Confirmed raw text and parsed number; intended value unknown|Keep only as possible explanation|
+|108.5 may be a category mismatch|Amber|Checked item normalization, comparison and key collision|Keep only as possible explanation|
+|Data prove a real-world cause|Red|Dataset is illustrative and has no causal variables|Reject|
+
+**Colour key:** Green = recomputable observation; amber = possible explanation, not verified; red = causal claim unsupported by this dataset.
 
 ## Reflection — personalize before submission
-The strongest difference between a fast automated cleaning approach and my decision was to avoid automatically deleting or replacing unusual values. The missing price, 9999, and 108.5 observation are different problems: the first is absent, the second is an extreme numeric value, and the third may be a mismatch between item and price. Treating all three as generic outliers would lose information.
 
-The comma in `1,250` is a formatting issue, so parsing it as 1250 is reasonable, but the resulting amount is still suspicious and should be checked against the source. I normalized `oil b` for consistent grouping but preserved the original label. I would not change 108.5 to another value or relabel it as Staple A without source documentation.
+The main limit of a first draft is that it can describe a numerical change without explaining why it happened. The data support statements about averages, medians and first-to-last differences, but they do not contain evidence about supply, demand, policy, transport or other causes. Flagged values also remain unresolved: excluding them can show how sensitive a statistic is, but it does not establish that the value is wrong. Comparing mean and median makes the effect of the 9999 value easier to see.
 
-**Complete this paragraph in your own words:** My own initial decision that differed from the AI suggestion was __________. I chose it because __________. The evidence that best supported my decision was __________. Without checking the data manually, I might have missed __________.
+**Complete honestly in your own words:** My first draft said more than the data allowed when I wrote That the increase in prices was caused by a particular factor. I changed it because The data only shows changes in prices and averages, not what caused those changes.
 
-## Limitations
-The dataset labels itself as illustrative teaching data, not actual PBS observations. The notebook therefore makes no claim about real market prices. The intended corrections for 9999 and 108.5 cannot be established from this file alone.
