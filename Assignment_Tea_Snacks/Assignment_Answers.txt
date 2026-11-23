@@ -1,0 +1,19 @@
+Student Tea & Snack Preferences — Answers
+
+Q1. Most preferred tea type among tea drinkers with a recorded tea type: Green (17 students).
+Q2. Average cups per day by gender:
+    Female: 2.60
+    Male: 3.00
+Q3. Snack choices:
+    Samosa: 40
+    Chips: 31
+    Biscuit: 29
+    Most selected snack: Samosa.
+Q4. Tea preference by age group (students marked Yes, with tea type recorded):
+    Age 18–20: Green 8, Black 5, Doodh Patti 3 (16 recorded tea types).
+    Age 21–23: Black 4, Green 3, Doodh Patti 3 (10 recorded tea types).
+    Age 24–26: Green 6, Black 4, Doodh Patti 3 (13 recorded tea types).
+Q5. Students marked as not drinking tea: 49.
+
+Dataset size: 100 students.
+Data-quality note: 12 students marked Yes have no tea type recorded; 38 students marked No have a tea type recorded. Q1 and Q4 use only students marked Yes with a recorded tea type.
