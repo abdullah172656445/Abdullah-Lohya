@@ -19,5 +19,4 @@
 - `pakistani_ecommerce_dataset.csv` — supplied e-commerce data.
 - `student_lifestyle_dataset.csv` — supplied student lifestyle data.
 
-## How to run
-Open the notebook in Jupyter and choose **Run All**. Keep both CSV files in the same folder as the notebook.
+
